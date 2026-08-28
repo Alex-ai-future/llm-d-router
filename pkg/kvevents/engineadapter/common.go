@@ -51,16 +51,47 @@ func parseTopic(topic string) (string, string) {
 	return topic, ""
 }
 
-// getHashAsUint64 converts engine hash formats (uint64, int64, or []byte) to uint64.
-// This handles both legacy uint64 hashes and new []byte hashes by taking
-// the last 8 bytes and interpreting them as a big-endian integer.
+// getHashAsUint64 converts engine hash formats (any Go integer type or []byte)
+// to uint64. MessagePack may decode small Python int values into narrow Go
+// integer types (int8, uint8, etc.), so all integer widths are accepted.
+// Signed integer hashes must be non-negative. Byte hashes use the last 8
+// bytes, interpreted as a big-endian integer.
 func getHashAsUint64(raw any) (uint64, error) {
 	switch val := raw.(type) {
 	case uint64:
 		return val, nil
+	case uint:
+		return uint64(val), nil
+	case uint32:
+		return uint64(val), nil
+	case uint16:
+		return uint64(val), nil
+	case uint8:
+		return uint64(val), nil
+	case int:
+		if val < 0 {
+			return 0, fmt.Errorf("hash value is negative: %d", val)
+		}
+		return uint64(val), nil
+	case int32:
+		if val < 0 {
+			return 0, fmt.Errorf("hash value is negative: %d", val)
+		}
+		return uint64(val), nil
+	case int16:
+		if val < 0 {
+			return 0, fmt.Errorf("hash value is negative: %d", val)
+		}
+		return uint64(val), nil
+	case int8:
+		if val < 0 {
+			return 0, fmt.Errorf("hash value is negative: %d", val)
+		}
+		return uint64(val), nil
 	case int64:
-		// #nosec G115 -- hash values are unsigned bit patterns; a msgpack encoder
-		// may tag one as Int64 whenever its top bit is set, regardless of the number sign.
+		if val < 0 {
+			return 0, fmt.Errorf("hash value is negative: %d", val)
+		}
 		return uint64(val), nil
 	case []byte:
 		if len(val) == 0 {
