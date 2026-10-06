@@ -146,13 +146,13 @@ func TestSGLangBlockStoredNegativeHashPreservesBits(t *testing.T) {
 		0xa3, 'G', 'P', 'U',
 	}
 
-	event, err := decodeEvent(rawEvent, adapter.eventConverters)
+	event, err := decodeEvent(rawEvent, sglangMapEventToFields, adapter.eventConverters)
 	require.NoError(t, err)
 
 	blockStored, ok := event.(*kvevents.BlockStoredEvent)
 	require.True(t, ok)
-	assert.Equal(t, []uint64{uint64(hash)}, blockStored.BlockHashes)
-	assert.Equal(t, uint64(parentHash), blockStored.ParentHash)
+	assert.Equal(t, []uint64{uint64(hash)}, blockStored.BlockHashes) // #nosec G115 -- preserve signed hash bit pattern in test expectation
+	assert.Equal(t, uint64(parentHash), blockStored.ParentHash)      // #nosec G115 -- preserve signed hash bit pattern in test expectation
 }
 
 // TestSGLangBlockStored_7Fields tests decoding with 7 fields (no lora_name, no extra_keys).

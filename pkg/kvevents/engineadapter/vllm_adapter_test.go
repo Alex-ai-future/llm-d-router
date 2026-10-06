@@ -142,7 +142,7 @@ func TestVLLMBlockStoredSmallIntegerHash(t *testing.T) {
 		0xc0, // extra_keys: nil
 	}
 
-	event, err := adapter.decodeVLLMEvent(rawEvent)
+	event, err := decodeEvent(rawEvent, mapEventToFields, adapter.eventConverters)
 	require.NoError(t, err)
 
 	blockStored, ok := event.(*kvevents.BlockStoredEvent)
